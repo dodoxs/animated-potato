@@ -1,0 +1,106 @@
+#include <iostream>
+#include <memory>
+#include <string>
+
+
+template<typename T>
+class queue
+{
+private:
+    struct node
+            {
+        std::unique_ptr<node> next;
+ //       std::unique_ptr<node> prev;
+        T data;
+    };
+
+public:
+    ~queue()
+    {
+        while (head_)
+        {
+            pop();
+        }
+    }
+
+     bool empty() const{
+        return !head_;
+    }
+
+    operator bool() const
+    {
+        return !empty();
+    }
+
+    const T &top() const
+    {
+        return head_->data;
+    }
+
+//push using tail
+    void push(const T &v)
+    {
+        auto n = std::make_unique<node>();
+        n->data = v;
+        if (tail_)
+        {
+            tail_->next = std::move(n);
+            tail_ = tail_->next.get();
+        }
+        else
+        {
+            head_ = std::move(n);
+            tail_ = head_.get();
+        }
+    }
+    void pop() {
+        head_ = std::move(head_->next);
+    }
+
+    void print_all() const {
+        auto head = head_.get();
+        while (head) {
+            std::cout << head->data << " ";
+            head = head->next.get();
+        }
+        std::cout << "\n";
+    }
+
+    void remove(const T &v) {
+        auto head = head_.get();
+        while (head) {
+            if (head->data == v) {
+                head->data = head->next->data;
+                head->next = std::move(head->next->next);
+                break;
+            }
+            head = head->next.get();
+        }
+    }
+
+private:
+    std::unique_ptr<node> head_;
+    node *tail_ = nullptr;
+};
+
+int main() {
+    queue<int> q;
+    if (!q) std::cout << "Empty" << std::endl;
+    for (int i = 1; i < 10; i++) {
+        q.push(i);
+    }
+    q.push(30);
+    q.print_all();
+    q.remove(5);
+    //q.printAll();
+    //std::cout << std::endl;
+    q.print_all();
+    for(int i = 0; i < 5; i++)
+    q.pop();
+    q.print_all();
+    queue<std::string> q2;
+
+    q2.push("Hello");
+    q2.push("World");
+    q2.print_all();
+}
